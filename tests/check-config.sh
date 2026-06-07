@@ -2,7 +2,6 @@
 # ==========================================================
 # DevSecOps Config Linter & Compliance Dashboard Generator
 # ==========================================================
-set -e
 
 FAILED=0
 HTML_FILE="tests/compliance-dashboard.html"
