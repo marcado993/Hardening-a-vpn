@@ -12,8 +12,7 @@ services:
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     networks:
-      vpn_network:
-        ipv4_address: 172.20.0.10
+      - vpn_network
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -41,8 +40,7 @@ services:
       - ./docker/config/pki:/etc/openvpn/pki:ro
       - ./docker/config/crl:/etc/openvpn/crl:ro  # Bind mount of the host CRL directory
     networks:
-      vpn_network:
-        ipv4_address: 172.20.0.11
+      - vpn_network
     deploy:
       resources:
         limits:
@@ -75,8 +73,7 @@ services:
       - ./docker/config/pki:/etc/openvpn/pki:ro
       - ./docker/config/crl:/etc/openvpn/crl:ro  # Bind mount of the host CRL directory
     networks:
-      vpn_network:
-        ipv4_address: 172.20.0.12
+      - vpn_network
     deploy:
       resources:
         limits:
@@ -86,9 +83,6 @@ services:
     command: ["/etc/openvpn/openvpn.conf"]
     restart: unless-stopped
 
-# Network configuration
+# Network configuration (dynamically allocated to prevent conflicts)
 networks:
   vpn_network:
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
