@@ -1,13 +1,13 @@
 # Hardened OpenVPN Container Image
 # Based on minimal Alpine Linux to reduce vulnerability footprint
-FROM alpine:3.19
+FROM alpine:3.20
 
 # Maintainer metadata
 LABEL maintainer="DevSecOps Team" \
       description="Hardened OpenVPN image supporting active-active configurations and DCO"
 
-# Install necessary packages and clean caches immediately
-RUN apk add --no-cache \
+# Install necessary packages, perform security upgrades, and clean caches immediately
+RUN apk update && apk upgrade --no-cache && apk add --no-cache \
         openvpn \
         iptables \
         bash \
