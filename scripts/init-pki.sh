@@ -11,8 +11,9 @@ echo "[INFO] Creating PKI and CRL directories..."
 mkdir -p "$PKI_DIR"
 mkdir -p "$CRL_DIR"
 
-# Working directory for OpenSSL database
-WORKDIR=$(mktemp -d)
+# Working directory for OpenSSL database (relative path to avoid Windows path translation errors)
+WORKDIR="./tmp_pki_build"
+mkdir -p "$WORKDIR"
 trap 'rm -rf "$WORKDIR"' EXIT
 
 echo "[INFO] Configuring temporary OpenSSL workspace..."
