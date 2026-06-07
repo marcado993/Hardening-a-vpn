@@ -39,7 +39,7 @@ services:
     volumes:
       - ./docker/config/server-node1.conf:/etc/openvpn/openvpn.conf:ro
       - ./docker/config/pki:/etc/openvpn/pki:ro
-      - crl-share:/etc/openvpn/crl:ro  # Shared CRL mounted as Read-Only (updated by script)
+      - ./docker/config/crl:/etc/openvpn/crl:ro  # Bind mount of the host CRL directory
     networks:
       vpn_network:
         ipv4_address: 172.20.0.11
@@ -47,7 +47,6 @@ services:
       resources:
         limits:
           memory: 256M
-    pids_limit: 100
     security_opt:
       - no-new-privileges:true
     command: ["/etc/openvpn/openvpn.conf"]
@@ -74,7 +73,7 @@ services:
     volumes:
       - ./docker/config/server-node2.conf:/etc/openvpn/openvpn.conf:ro
       - ./docker/config/pki:/etc/openvpn/pki:ro
-      - crl-share:/etc/openvpn/crl:ro  # Shared CRL mounted as Read-Only
+      - ./docker/config/crl:/etc/openvpn/crl:ro  # Bind mount of the host CRL directory
     networks:
       vpn_network:
         ipv4_address: 172.20.0.12
@@ -82,21 +81,14 @@ services:
       resources:
         limits:
           memory: 256M
-    pids_limit: 100
     security_opt:
       - no-new-privileges:true
     command: ["/etc/openvpn/openvpn.conf"]
     restart: unless-stopped
 
-# ==========================================
-# Network and Shared Volumes
-# ==========================================
+# Network configuration
 networks:
   vpn_network:
     ipam:
       config:
         - subnet: 172.20.0.0/24
-
-volumes:
-  crl-share:
-    name: openvpn_crl_share

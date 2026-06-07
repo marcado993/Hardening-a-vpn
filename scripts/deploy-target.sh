@@ -58,12 +58,6 @@ ssh -p "$SSH_PORT" -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no "$TARGET_USER@
         ./scripts/init-pki.sh
     fi
     
-    # Initialize the shared CRL file in the docker volume mount path if not already done
-    echo "[INFO] Initializing shared volume permissions..."
-    docker volume create openvpn_crl_share || true
-    # Sync generated/existing CRL into the volume
-    docker run --rm -v openvpn_crl_share:/data -v "\$(pwd)/docker/config/crl:/src" alpine cp /src/crl.pem /data/crl.pem
-    
     echo "[INFO] Building and starting containers via Docker Compose..."
     docker compose down --remove-orphans || docker-compose down --remove-orphans || true
     docker compose up --build -d || docker-compose up --build -d
