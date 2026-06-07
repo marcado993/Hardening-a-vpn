@@ -14,7 +14,7 @@ fi
 # SSH Port Configuration (default to 22 if not provided)
 SSH_PORT=${TARGET_PORT:-22}
 
-DEPLOY_DIR="/opt/openvpn-hardened"
+DEPLOY_DIR="openvpn-hardened"
 SSH_KEY_FILE="/tmp/target_ssh_key"
 
 echo "[INFO] Setting up SSH private key..."
