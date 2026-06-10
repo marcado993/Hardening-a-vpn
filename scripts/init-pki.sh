@@ -4,6 +4,9 @@
 # ==========================================
 set -e
 
+# Prevent Git Bash from converting OpenSSL subjects (e.g. /CN=) into Windows directory paths
+export MSYS_NO_PATHCONV=1
+
 PKI_DIR="docker/config/pki"
 CRL_DIR="docker/config/crl"
 
@@ -69,7 +72,7 @@ EOF
 echo "[INFO] Generating CA private key and self-signed certificate..."
 openssl genrsa -out "$PKI_DIR/ca.key" 4096
 openssl req -new -x509 -days 3650 -key "$PKI_DIR/ca.key" -out "$PKI_DIR/ca.crt" \
-    -subj "//CN=Hardened-OpenVPN-Test-CA"
+    -subj "/CN=Hardened-OpenVPN-Test-CA"
 
 # 2. Generate Diffie-Hellman Parameters (2048-bit for fast testing generation)
 echo "[INFO] Generating Diffie-Hellman parameters (2048-bit)..."
@@ -103,7 +106,7 @@ fi
 echo "[INFO] Generating Node 1 server certificate..."
 openssl genrsa -out "$PKI_DIR/server-node1.key" 2048
 openssl req -new -key "$PKI_DIR/server-node1.key" -out "$WORKDIR/server-node1.csr" \
-    -subj "//CN=openvpn-node1"
+    -subj "/CN=openvpn-node1"
 openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions server_ext \
     -in "$WORKDIR/server-node1.csr" -out "$PKI_DIR/server-node1.crt"
 
@@ -111,7 +114,7 @@ openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions server_ext \
 echo "[INFO] Generating Node 2 server certificate..."
 openssl genrsa -out "$PKI_DIR/server-node2.key" 2048
 openssl req -new -key "$PKI_DIR/server-node2.key" -out "$WORKDIR/server-node2.csr" \
-    -subj "//CN=openvpn-node2"
+    -subj "/CN=openvpn-node2"
 openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions server_ext \
     -in "$WORKDIR/server-node2.csr" -out "$PKI_DIR/server-node2.crt"
 
@@ -119,7 +122,7 @@ openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions server_ext \
 echo "[INFO] Generating client certificate..."
 openssl genrsa -out "$PKI_DIR/client.key" 2048
 openssl req -new -key "$PKI_DIR/client.key" -out "$WORKDIR/client.csr" \
-    -subj "//CN=test-client"
+    -subj "/CN=test-client"
 openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions client_ext \
     -in "$WORKDIR/client.csr" -out "$PKI_DIR/client.crt"
 
