@@ -130,4 +130,10 @@ openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions client_ext \
 echo "[INFO] Generating initial Certificate Revocation List (CRL)..."
 openssl ca -config "$WORKDIR/openssl.cnf" -gencrl -out "$CRL_DIR/crl.pem"
 
+echo "[INFO] Setting permissions for container compatibility (hardened without DAC_OVERRIDE)..."
+chmod 755 "$PKI_DIR"
+chmod 644 "$PKI_DIR"/*
+chmod 755 "$CRL_DIR"
+chmod 644 "$CRL_DIR"/* 2>/dev/null || true
+
 echo "[SUCCESS] PKI initialization completed. Certificates generated in $PKI_DIR"
