@@ -50,6 +50,24 @@ if [ "$LOGTO_READY" = "false" ]; then
     exit 1
 fi
 
+# 2.5 Inject M2M test credentials into Logto database (for CI/CD pipeline compatibility)
+echo "[INFO] Injecting M2M test credentials into Logto database..."
+docker exec security-postgres psql -U postgres -d logto -c "
+  DELETE FROM applications_roles WHERE application_id = '6oi8l4d2919eknf6t3yn9';
+  DELETE FROM application_secrets WHERE application_id = '6oi8l4d2919eknf6t3yn9';
+  DELETE FROM applications WHERE id = '6oi8l4d2919eknf6t3yn9';
+
+  INSERT INTO applications (tenant_id, id, name, secret, type, oidc_client_metadata, custom_client_metadata, custom_data, is_third_party, app_level_access_control_enabled)
+  VALUES ('default', '6oi8l4d2919eknf6t3yn9', 'logto-kevin', '#internal:62TcUsOd6aIbJDwZXnJzrErFvwe9gPDY', 'MachineToMachine', '{\"redirectUris\": [], \"postLogoutRedirectUris\": []}'::jsonb, '{}'::jsonb, '{}'::jsonb, false, false);
+
+  INSERT INTO application_secrets (tenant_id, application_id, name, value)
+  VALUES ('default', '6oi8l4d2919eknf6t3yn9', 'Default secret', 'sAXjILcsNS9ipQxW0vEAs9wZlWPuElAe');
+
+  INSERT INTO applications_roles (tenant_id, id, application_id, role_id)
+  VALUES ('default', 's2lab3q1tnsuvnk2v2c0v', '6oi8l4d2919eknf6t3yn9', 'vlou7jgxyyuoek23ejfwh');
+" > /dev/null
+echo "[SUCCESS] Test credentials injected successfully."
+
 # Wait for frontend portal to respond
 echo "[INFO] Waiting for frontend portal to respond..."
 PORTAL_READY=false
