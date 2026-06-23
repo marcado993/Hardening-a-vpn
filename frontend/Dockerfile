@@ -1,47 +1,39 @@
-# ==========================================
-# Stage 1: Build Next.js Application
-# ==========================================
-FROM node:20-alpine AS builder
+# 1. Base
+FROM node:22-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV CI=true
+RUN corepack enable && corepack prepare pnpm@latest --activate && pnpm config set minimum-release-age 0
+
+# 2. Dependencies
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+RUN pnpm install --frozen-lockfile
 
-# Upgrade npm to latest version for security and performance
-RUN npm install -g npm@latest
-
-# Copy package configurations and install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Copy code and build application
+# 3. Builder
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN pnpm build
 
-# ==========================================
-# Stage 2: Minimal Runner Environment
-# ==========================================
-FROM node:20-alpine AS runner
+# 4. Runner
+FROM node:22-alpine AS runner
 WORKDIR /app
-
-# Upgrade pre-installed npm to resolve CVEs in its transitive dependencies (cross-spawn, glob, minimatch, tar)
-RUN npm install -g npm@latest
-
 ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
 
-# Create a non-root system user and group for security
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
+# Install openssl so the certificate generation API can sign client certs
+RUN apk add --no-cache openssl && \
+    addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy required runtime files from builder stage
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Drop root privileges
 USER nextjs
-
 EXPOSE 3000
-
-# Start Next.js in production mode
-CMD ["npm", "start"]
+ENV PORT=3000
+CMD ["node", "server.js"]

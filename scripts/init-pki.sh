@@ -118,6 +118,14 @@ openssl req -new -key "$PKI_DIR/server-node2.key" -out "$WORKDIR/server-node2.cs
 openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions server_ext \
     -in "$WORKDIR/server-node2.csr" -out "$PKI_DIR/server-node2.crt"
 
+# Generate Node 3 Server Certificate
+echo "[INFO] Generating Node 3 server certificate..."
+openssl genrsa -out "$PKI_DIR/server-node3.key" 2048
+openssl req -new -key "$PKI_DIR/server-node3.key" -out "$WORKDIR/server-node3.csr" \
+    -subj "/CN=openvpn-node3"
+openssl ca -config "$WORKDIR/openssl.cnf" -batch -extensions server_ext \
+    -in "$WORKDIR/server-node3.csr" -out "$PKI_DIR/server-node3.crt"
+
 # 6. Generate Client Certificate
 echo "[INFO] Generating client certificate..."
 openssl genrsa -out "$PKI_DIR/client.key" 2048

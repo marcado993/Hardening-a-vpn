@@ -62,7 +62,7 @@ check_file_does_not_contain() {
 echo "=== Running Policy as Code Audits ==="
 
 # 1. Audit OpenVPN Server Configuration files
-for config in docker/config/server-node1.conf docker/config/server-node2.conf; do
+for config in docker/config/server-node1.conf docker/config/server-node2.conf docker/config/server-node3.conf; do
     node_name=$(basename "$config" .conf)
     
     # Cipher AES-256-GCM
@@ -112,10 +112,13 @@ check_file_contains "Seguridad Cliente" "Protección MitM (Client)" "$client_tmp
 # 3. Check Subnet Segregation
 subnet1=$(grep -oE "server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" docker/config/server-node1.conf | awk '{print $2}' || echo "")
 subnet2=$(grep -oE "server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" docker/config/server-node2.conf | awk '{print $2}' || echo "")
-if [ -n "$subnet1" ] && [ -n "$subnet2" ] && [ "$subnet1" != "$subnet2" ]; then
-    add_check_result "Redes" "Segregación de Subredes" "PASSED" "Nodos segregados correctamente: Node 1 ($subnet1) vs Node 2 ($subnet2)"
+subnet3=$(grep -oE "server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" docker/config/server-node3.conf | awk '{print $2}' || echo "")
+
+if [ -n "$subnet1" ] && [ -n "$subnet2" ] && [ -n "$subnet3" ] && \
+   [ "$subnet1" != "$subnet2" ] && [ "$subnet2" != "$subnet3" ] && [ "$subnet1" != "$subnet3" ]; then
+    add_check_result "Redes" "Segregación de Subredes" "PASSED" "Nodos segregados correctamente: Node 1 ($subnet1) vs Node 2 ($subnet2) vs Node 3 ($subnet3)"
 else
-    add_check_result "Redes" "Segregación de Subredes" "FAILED" "Las subredes colisionan o no están bien definidas: Node 1 ($subnet1) vs Node 2 ($subnet2)"
+    add_check_result "Redes" "Segregación de Subredes" "FAILED" "Las subredes colisionan o no están bien definidas: Node 1 ($subnet1) vs Node 2 ($subnet2) vs Node 3 ($subnet3)"
 fi
 
 # 4. Audit Docker Compose
