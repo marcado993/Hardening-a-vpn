@@ -64,7 +64,10 @@ docker exec security-postgres psql -U postgres -d logto -c "
   VALUES ('default', '6oi8l4d2919eknf6t3yn9', 'Default secret', 'sAXjILcsNS9ipQxW0vEAs9wZlWPuElAe');
 
   INSERT INTO applications_roles (tenant_id, id, application_id, role_id)
-  VALUES ('default', 's2lab3q1tnsuvnk2v2c0v', '6oi8l4d2919eknf6t3yn9', 'vlou7jgxyyuoek23ejfwh');
+  VALUES ('default', 's2lab3q1tnsuvnk2v2c0v', '6oi8l4d2919eknf6t3yn9', COALESCE(
+    (SELECT id FROM roles WHERE name = 'Logto Management API access' LIMIT 1),
+    (SELECT id FROM roles WHERE type = 'MachineToMachine' LIMIT 1)
+  ));
 " > /dev/null
 echo "[SUCCESS] Test credentials injected successfully."
 
